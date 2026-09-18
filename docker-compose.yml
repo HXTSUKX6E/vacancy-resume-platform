@@ -1,6 +1,6 @@
 services:
   zookeeper:
-    image: bitnami/zookeeper:3.9
+    image: soldevelo/zookeeper:3.9
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes  # Только для разработки!
     ports:
