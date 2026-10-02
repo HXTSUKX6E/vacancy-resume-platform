@@ -5,44 +5,58 @@ import net.javaguides.springboot.model.Role;
 import net.javaguides.springboot.model.User;
 import net.javaguides.springboot.repository.RoleRepository;
 import net.javaguides.springboot.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Создаёт учётную запись администратора при первом запуске.
+ * Роли заполняются миграцией Liquibase, логин и пароль администратора
+ * берутся из переменных окружения ADMIN_LOGIN / ADMIN_PASSWORD.
+ */
 @Service
 public class DataInitializer {
+
+    private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
+    private static final long ADMIN_ROLE_ID = 1L;
 
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final String adminLogin;
+    private final String adminPassword;
 
     @Autowired
     public DataInitializer(RoleRepository roleRepository,
                            UserRepository userRepository,
-                           BCryptPasswordEncoder bCryptPasswordEncoder) {
+                           BCryptPasswordEncoder bCryptPasswordEncoder,
+                           @Value("${admin.login}") String adminLogin,
+                           @Value("${admin.password}") String adminPassword) {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.adminLogin = adminLogin;
+        this.adminPassword = adminPassword;
     }
 
     @PostConstruct
     public void init() {
-        Role role1 = new Role("Администратор");
-        Role role2 = new Role("Пользователь");
-        Role role3 = new Role("Сотрудник");
-        if (roleRepository.count() == 0) { // Проверяем, пуста ли таблица
-            roleRepository.save(role1);
-            roleRepository.save(role2);
-            roleRepository.save(role3);
+        if (userRepository.count() > 0) {
+            return;
         }
-        if (userRepository.count() == 0) {
-            String pass = bCryptPasswordEncoder.encode("Dimka2003");
-
-            User user1 = new User("dima20030617@mail.ru", pass, role1);
-            user1.setEnabled(true);
-
-            userRepository.save(user1);
+        if (adminLogin.isBlank() || adminPassword.isBlank()) {
+            logger.warn("ADMIN_LOGIN / ADMIN_PASSWORD не заданы, администратор не создан");
+            return;
         }
+        Role adminRole = roleRepository.findById(ADMIN_ROLE_ID)
+                .orElseThrow(() -> new IllegalStateException("Роль администратора не найдена, проверьте миграции"));
+
+        User admin = new User(adminLogin, bCryptPasswordEncoder.encode(adminPassword), adminRole);
+        admin.setEnabled(true);
+        userRepository.save(admin);
+        logger.info("Создан администратор {}", adminLogin);
     }
 }

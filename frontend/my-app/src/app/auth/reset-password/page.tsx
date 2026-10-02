@@ -1,4 +1,5 @@
 'use client'
+import { API_URL } from '@/app/lib/api';
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -43,7 +44,7 @@ export default function ResetPasswordPage() {
         setIsLoading(true)
         try {
             const response = await axios.post(
-                `http://localhost/api/auth/confirm-reset-password?token=${token}`,
+                `${API_URL}/api/auth/confirm-reset-password?token=${token}`,
                 {
                     password: data.password,
                     repeatPassword: data.repeatPassword

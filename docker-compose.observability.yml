@@ -1,0 +1,58 @@
+# Дополнительные инструменты: сбор логов в Graylog и pgAdmin.
+# Не обязательны для работы приложения, подключаются поверх основного файла:
+#   docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d
+
+x-graylog-logging: &graylog-logging
+  SPRING_PROFILES_ACTIVE: graylog
+  GRAYLOG_HOST: graylog
+  GRAYLOG_PORT: 12202
+
+services:
+  auth-service:
+    environment: *graylog-logging
+  company-vacancy-service:
+    environment: *graylog-logging
+  notification-service:
+    environment: *graylog-logging
+
+  mongo:
+    image: mongo:5.0
+    volumes:
+      - mongo-data:/data/db
+
+  elasticsearch:
+    image: elasticsearch:7.17.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+
+  graylog:
+    image: graylog/graylog:5.0
+    environment:
+      GRAYLOG_PASSWORD_SECRET: ${GRAYLOG_PASSWORD_SECRET}
+      GRAYLOG_ROOT_PASSWORD_SHA2: ${GRAYLOG_ROOT_PASSWORD_SHA2}
+      GRAYLOG_HTTP_BIND_ADDRESS: "0.0.0.0:9000"
+      GRAYLOG_HTTP_EXTERNAL_URI: "http://localhost:9000/"
+      GRAYLOG_ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+      GRAYLOG_MONGODB_URI: "mongodb://mongo:27017/graylog"
+    ports:
+      - "9000:9000"
+      - "12202:12202/udp"
+    depends_on:
+      - mongo
+      - elasticsearch
+
+  pgadmin:
+    image: dpage/pgadmin4:8.12
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "5050:80"
+
+volumes:
+  mongo-data:
+  es-data:

@@ -1,4 +1,5 @@
 'use client'
+import { API_URL } from '@/app/lib/api';
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Header } from '@/app/components/Header'
@@ -36,7 +37,7 @@ export default function ProfilePage() {
                 const token = localStorage.getItem('token')
                 if (!token) return
 
-                const res = await axios.get('http://localhost/api/auth/profile', {
+                const res = await axios.get(`${API_URL}/api/auth/profile`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
 
@@ -54,7 +55,7 @@ export default function ProfilePage() {
                 const token = localStorage.getItem('token')
                 if (!token) return
 
-                const response = await axios.get('http://localhost/api/auth/profile', {
+                const response = await axios.get(`${API_URL}/api/auth/profile`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
 
@@ -79,7 +80,7 @@ export default function ProfilePage() {
             const confirmEmailChange = async () => {
                 try {
                     await new Promise(resolve => setTimeout(resolve, 500))
-                    const response = await axios.get(`http://localhost/api/auth/confirm-email-change?token=${tokenFromQuery}`)
+                    const response = await axios.get(`${API_URL}/api/auth/confirm-email-change?token=${tokenFromQuery}`)
 
                     if (response.data.token) {
                         localStorage.setItem('token', response.data.token)
@@ -102,7 +103,7 @@ export default function ProfilePage() {
             const token = localStorage.getItem('token')
             if (!token) return
 
-            const response = await axios.put('http://localhost/api/auth/profile/change-login', {
+            const response = await axios.put(`${API_URL}/api/auth/profile/change-login`, {
                 login_old: oldLogin,
                 login: newLogin
             }, {
@@ -139,7 +140,7 @@ export default function ProfilePage() {
                 role_id: role === 'Администратор' ? 1 : roleId
             }
 
-            const response = await axios.put('http://localhost/api/auth/profile', payload, {
+            const response = await axios.put(`${API_URL}/api/auth/profile`, payload, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json'

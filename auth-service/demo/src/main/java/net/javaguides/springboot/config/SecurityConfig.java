@@ -1,6 +1,7 @@
 package net.javaguides.springboot.config;
 
 import net.javaguides.springboot.util.JwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -32,6 +33,9 @@ import java.util.List;
 @EnableAsync
 public class SecurityConfig {
 
+    @Value("${cors.allowed-origins}")
+    private List<String> allowedOrigins;
+
     @Bean
     public BCryptPasswordEncoder BCryptPasswordEncoder() {
         return new BCryptPasswordEncoder(); // Используйте BCrypt для хеширования паролей
@@ -57,6 +61,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable()) // Отключение CSRF
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/health/**").permitAll() // Проверка состояния для оркестратора
                         .requestMatchers("/api/auth/register").permitAll() // Запросы без токена
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/confirm").permitAll()
@@ -77,7 +82,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(List.of("http://localhost:3000"));  // Указываем разрешенные источники
+        corsConfiguration.setAllowedOrigins(allowedOrigins);  // Разрешенные источники задаются через CORS_ALLOWED_ORIGINS
         corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));  // Разрешенные методы
         corsConfiguration.setAllowedHeaders(List.of("*"));  // Разрешаем все заголовки
         corsConfiguration.setAllowCredentials(true);  // Разрешаем использование куки

@@ -1,4 +1,5 @@
 'use client'
+import { API_URL } from '@/app/lib/api';
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
@@ -50,7 +51,7 @@ export default function CompanyPage() {
                     return
                 }
 
-                const response = await axios.get(`http://localhost/api/comp-vac/company/${id}`, {
+                const response = await axios.get(`${API_URL}/api/comp-vac/company/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     },
@@ -97,7 +98,7 @@ export default function CompanyPage() {
             }
 
             await axios.put(
-                `http://localhost/api/comp-vac/company-accept/${id}`,
+                `${API_URL}/api/comp-vac/company-accept/${id}`,
                 {},
                 {
                     headers: {
@@ -125,7 +126,7 @@ export default function CompanyPage() {
                 return
             }
 
-            await axios.delete(`http://localhost/api/comp-vac/company/${id}`, {
+            await axios.delete(`${API_URL}/api/comp-vac/company/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -157,7 +158,7 @@ export default function CompanyPage() {
             }
 
             const response = await axios.put(
-                `http://localhost/api/comp-vac/company/${id}`,
+                `${API_URL}/api/comp-vac/company/${id}`,
                 editData,
                 {
                     headers: {

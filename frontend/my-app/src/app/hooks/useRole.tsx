@@ -1,5 +1,6 @@
 // hooks/useRole.ts
 'use client'
+import { API_URL } from '@/app/lib/api';
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
@@ -12,7 +13,7 @@ export default function useRole() {
             if (!token) return
 
             try {
-                const response = await axios.get('http://localhost/api/auth/profile', {
+                const response = await axios.get(`${API_URL}/api/auth/profile`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
                 setRole(response.data.role)

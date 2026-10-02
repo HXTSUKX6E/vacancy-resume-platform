@@ -9,3 +9,16 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+
+# Конфигурация окружения с секретами (шаблон - .env.example)
+.env
+**/.env
+!.env.example
+
+# IDE, артефакты сборки, логи
+.idea/
+**/.idea/
+**/target/
+**/node_modules/
+**/.next/
+nginx/logs/

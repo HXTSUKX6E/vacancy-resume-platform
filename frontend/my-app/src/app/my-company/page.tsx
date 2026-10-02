@@ -1,5 +1,6 @@
 // app/companies/page.tsx
 'use client'
+import { API_URL } from '@/app/lib/api';
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
@@ -42,7 +43,7 @@ export default function CompaniesPage() {
                     return
                 }
 
-                const response = await axios.get('http://localhost/api/comp-vac/my-company', {
+                const response = await axios.get(`${API_URL}/api/comp-vac/my-company`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }

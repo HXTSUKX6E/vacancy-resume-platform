@@ -1,4 +1,5 @@
 'use client'
+import { API_URL } from '@/app/lib/api';
 
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
@@ -53,7 +54,7 @@ export default function ResumesListPage() {
                 const token = localStorage.getItem('token')
                 if (!token) throw new Error('Token not found')
 
-                const response = await axios.get('http://localhost/api/user/resume', {
+                const response = await axios.get(`${API_URL}/api/user/resume`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
                 setResumes(response.data)

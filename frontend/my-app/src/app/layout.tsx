@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -29,7 +30,8 @@ export default function RootLayout({
         <body
             className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
         >
-        {children}
+        {/* Suspense нужен страницам с useSearchParams() для production-сборки */}
+        <Suspense>{children}</Suspense>
         </body>
         </html>
     );

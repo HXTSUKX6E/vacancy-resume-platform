@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
@@ -22,11 +23,14 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
     private final ObjectMapper objectMapper;
+    private final String frontendUrl;
 
     @Autowired
-    public EmailService(JavaMailSender mailSender, ObjectMapper objectMapper) {
+    public EmailService(JavaMailSender mailSender, ObjectMapper objectMapper,
+                        @Value("${app.frontend-url}") String frontendUrl) {
         this.mailSender = mailSender;
         this.objectMapper = objectMapper;
+        this.frontendUrl = frontendUrl;
     }
 
     @KafkaListener(topics = "user-change-event", groupId = "email-change-group")
@@ -93,7 +97,7 @@ public class EmailService {
     @Async
     public void sendConfirmationChangeEmail(String to, String token) {
         String subject = "Подтверждение изменения ";
-        String confirmationUrl = "http://localhost:3000/profile?token=" + token;
+        String confirmationUrl = frontendUrl + "/profile?token=" + token;
         String message = "Перейдите по ссылке для подтверждения смены email: " + confirmationUrl;
 
         SimpleMailMessage email = new SimpleMailMessage();
@@ -107,7 +111,7 @@ public class EmailService {
     @Async
     public void sendVerificationEmail(String to, String token) {
         String subject = "Подтверждение email";
-        String confirmationUrl = "http://localhost:3000/auth/confirm?token=" + token;
+        String confirmationUrl = frontendUrl + "/auth/confirm?token=" + token;
 
         String textContent = """
     Здравствуйте!
@@ -135,7 +139,7 @@ public class EmailService {
     @Async
     public void sendForgotEmail(String to, String token) {
         String subject = "Восстановление пароля";
-        String resetUrl = "http://localhost:3000/auth/reset-password?token=" + token;
+        String resetUrl = frontendUrl + "/auth/reset-password?token=" + token;
 
         String textContent = """
         Здравствуйте!

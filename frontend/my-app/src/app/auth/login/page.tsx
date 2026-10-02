@@ -1,4 +1,5 @@
 'use client'
+import { API_URL } from '@/app/lib/api';
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -30,7 +31,7 @@ export default function LoginPage() {
     const onSubmit = async (data: LoginFormData) => {
         setIsLoading(true)
         try {
-            const response = await axios.post('http://localhost/api/auth/login', {
+            const response = await axios.post(`${API_URL}/api/auth/login`, {
                 login: data.login,
                 password: data.password
             }, {

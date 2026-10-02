@@ -1,4 +1,5 @@
 'use client'
+import { API_URL } from '@/app/lib/api';
 import { useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
@@ -40,7 +41,7 @@ export default function CreateCompanyPage() {
             }
 
             await axios.post(
-                'http://localhost/api/comp-vac/company',
+                `${API_URL}/api/comp-vac/company`,
                 formData,
                 {
                     headers: {

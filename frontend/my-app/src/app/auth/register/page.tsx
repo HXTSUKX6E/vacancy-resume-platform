@@ -1,4 +1,5 @@
 'use client'
+import { API_URL } from '@/app/lib/api';
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -35,7 +36,7 @@ export default function RegisterPage() {
         setIsLoading(true);
         try {
             const response = await axios.post(
-                'http://localhost/api/auth/register',
+                `${API_URL}/api/auth/register`,
                 {
                     login: data.email,
                     password: data.password

@@ -1,5 +1,6 @@
 // components/AuthGuard.tsx
 'use client'
+import { API_URL } from '@/app/lib/api';
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
@@ -18,7 +19,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
             }
 
             try {
-                const response = await axios.get('http://localhost/api/auth/profile', {
+                const response = await axios.get(`${API_URL}/api/auth/profile`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
                 setRole(response.data.role)

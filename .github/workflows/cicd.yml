@@ -8,6 +8,13 @@ on:
     branches:
       - main
 
+# Тестовая конфигурация (секреты в CI берутся из GitHub Secrets, здесь - фиктивные значения для тестов)
+env:
+  JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret-ci-test-secret-ci-test-secret-0000' }}
+  YC_ACCESS_KEY: test
+  YC_SECRET_KEY: test
+  YC_BUCKET_NAME: test
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -84,10 +91,7 @@ jobs:
     - name: Run tests for company-vacancy-service
       working-directory: company-vacancy-service/demo
       run: |
-       mvn test -B -e \
-       -Dspring.datasource.url=jdbc:postgresql://localhost:5432/CompVacDb \
-       -Dspring.datasource.username=postgres \
-       -Dspring.datasource.password=12345678
+       mvn test -B -e
 
   cleanup:
     runs-on: ubuntu-latest

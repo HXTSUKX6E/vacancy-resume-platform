@@ -41,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Обработка запросов без токена
         String requestURI = request.getRequestURI();
-        if (requestURI.equals("/api/auth/register") || requestURI.equals("/api/auth/login") || requestURI.equals("/api/auth/confirm") || requestURI.equals("/api/auth/confirm-email-change")) {
+        if (requestURI.startsWith("/actuator/health") || requestURI.equals("/api/auth/register") || requestURI.equals("/api/auth/login") || requestURI.equals("/api/auth/confirm") || requestURI.equals("/api/auth/confirm-email-change")) {
             filterChain.doFilter(request, response);
             return;
         }

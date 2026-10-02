@@ -1,4 +1,5 @@
 'use client'
+import { API_URL } from '@/app/lib/api';
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -31,7 +32,7 @@ export function Header() {
             try {
                 const token = localStorage.getItem('token')
                 if (token) {
-                    const res = await axios.get('http://localhost/api/auth/profile', {
+                    const res = await axios.get(`${API_URL}/api/auth/profile`, {
                         headers: { Authorization: `Bearer ${token}` }
                     })
                     setUserId(res.data.userId)
@@ -47,7 +48,7 @@ export function Header() {
         try {
             const token = localStorage.getItem('token')
             if (token) {
-                await axios.post('http://localhost/api/auth/logout', {}, {
+                await axios.post(`${API_URL}/api/auth/logout`, {}, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
             }

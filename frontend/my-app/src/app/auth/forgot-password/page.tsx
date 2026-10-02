@@ -1,4 +1,5 @@
 'use client'
+import { API_URL } from '@/app/lib/api';
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -36,7 +37,7 @@ export default function ForgotPasswordPage() {
             }
 
             const response = await axios.post(
-                'http://localhost/api/auth/forgot-password',
+                `${API_URL}/api/auth/forgot-password`,
                 requestData, // Используем преобразованные данные
                 {
                     timeout: 10000,

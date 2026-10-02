@@ -1,4 +1,5 @@
 'use client'
+import { API_URL } from '@/app/lib/api';
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
@@ -109,7 +110,7 @@ export default function ResumePage() {
     }
 
     const getUserId = async (token: string): Promise<number> => {
-        const profileRes = await axios.get('http://localhost/api/auth/profile', {
+        const profileRes = await axios.get(`${API_URL}/api/auth/profile`, {
             headers: { Authorization: `Bearer ${token}` }
         })
         return profileRes.data.userId
@@ -129,7 +130,7 @@ export default function ResumePage() {
                 let resumeData = null
 
                 try {
-                    const response = await axios.get(`http://localhost/api/user/resume/${currentUserId}`, {
+                    const response = await axios.get(`${API_URL}/api/user/resume/${currentUserId}`, {
                         headers: { Authorization: `Bearer ${token}` }
                     })
                     resumeData = response.data
@@ -145,7 +146,7 @@ export default function ResumePage() {
                 }
                 setLoadingImages(true);
                 // Загружаем изображения только если резюме существует
-                const imagesResponse = await axios.get(`http://localhost/api/user/${currentUserId}/images/content`, {
+                const imagesResponse = await axios.get(`${API_URL}/api/user/${currentUserId}/images/content`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
 
@@ -200,7 +201,7 @@ export default function ResumePage() {
             if (!resume) {
                 // Создание нового резюме
                 const response = await axios.post(
-                    'http://localhost/api/user/resume',
+                    `${API_URL}/api/user/resume`,
                     {
                         ...formData,
                         resumeId: currentUserId
@@ -214,7 +215,7 @@ export default function ResumePage() {
             } else {
                 // Обновление существующего резюме
                 const response = await axios.put(
-                    `http://localhost/api/user/resume/${currentUserId}`,
+                    `${API_URL}/api/user/resume/${currentUserId}`,
                     formData,
                     {
                         headers: { Authorization: `Bearer ${token}` }
@@ -256,7 +257,7 @@ export default function ResumePage() {
                     if (!currentUserId) throw new Error('User ID not found')
                 }
 
-                await axios.delete(`http://localhost/api/user/resume/${userId}`, {
+                await axios.delete(`${API_URL}/api/user/resume/${userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
                 setResume(null)
@@ -291,7 +292,7 @@ export default function ResumePage() {
             }
             console.log('userId:', userId)
             console.log('token:', token)
-            await axios.post(`http://localhost/api/user/${userId}/image`, formData, {
+            await axios.post(`${API_URL}/api/user/${userId}/image`, formData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
@@ -299,7 +300,7 @@ export default function ResumePage() {
             })
 
             // Refresh images
-            const imagesResponse = await axios.get(`http://localhost/api/user/${userId}/images/content`, {
+            const imagesResponse = await axios.get(`${API_URL}/api/user/${userId}/images/content`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
 
@@ -332,13 +333,13 @@ export default function ResumePage() {
                 }
 
                 console.log(resumeImageid)
-                await axios.delete(`http://localhost/api/user/resume-image/${resumeImageid}/content`, {
+                await axios.delete(`${API_URL}/api/user/resume-image/${resumeImageid}/content`, {
                     headers: { Authorization: `Bearer ${token}` },
                     // data: { imageId }
                 })
 
                 // Refresh images
-                const imagesResponse = await axios.get(`http://localhost/api/user/${userId}/images/content`, {
+                const imagesResponse = await axios.get(`${API_URL}/api/user/${userId}/images/content`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
 

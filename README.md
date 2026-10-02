@@ -7,14 +7,14 @@
 - **auth-service** (Spring Boot, порт `8080`) — регистрация, авторизация, JWT, профиль, восстановление пароля, работа с резюме и изображениями резюме.
 - **company-vacancy-service** (Spring Boot, порт `8083`) — компании, вакансии, отклики.
 - **notification-service** (Spring Boot, порт `8081`) — email-уведомления, потребляет события из Kafka.
-- **nginx** (порт `80`) — reverse proxy к backend API.
-- **frontend/my-app** (Next.js) — веб-интерфейс (запускается отдельно, в `docker-compose` не подключён).
-- Инфраструктура: **PostgreSQL (2 БД), Redis, Kafka + Zookeeper, Graylog + Elasticsearch + MongoDB, pgAdmin**.
+- **nginx** (порт `80`) — единая точка входа: `/api/*` → backend, остальное → frontend.
+- **frontend/my-app** (Next.js) — веб-интерфейс.
+- Инфраструктура: **PostgreSQL (2 БД), Redis, Kafka (KRaft)**; опционально **Graylog + Elasticsearch + MongoDB, pgAdmin** (`docker-compose.observability.yml`).
 
 ## Архитектура и взаимодействие
 
 1. Клиент обращается в `nginx`.
-2. `nginx` проксирует запросы:
+2. `nginx` отдаёт фронтенд и проксирует запросы к API:
    - `/api/auth/*` и `/api/user/*` → `auth-service`
    - `/api/comp-vac/*` → `company-vacancy-service`
 3. `auth-service` и `company-vacancy-service` работают с PostgreSQL и JWT.
@@ -87,71 +87,82 @@
 
 ## Быстрый запуск (Docker Compose)
 
-### 1) Предварительная сборка JAR
-
-Из корня репозитория:
+Нужен только Docker: сборка JAR и фронтенда выполняется внутри образов.
 
 ```bash
-cd auth-service/demo && ./mvnw clean package && cd ../..
-cd company-vacancy-service/demo && ./mvnw clean package && cd ../..
-cd notification-service/demo && ./mvnw clean package && cd ../..
+cp .env.example .env      # заполнить секреты (пароли БД, JWT_SECRET, ADMIN_*, YC_*, MAIL_*)
+docker compose up -d --build
 ```
 
-### 2) Поднять инфраструктуру и сервисы
+- Приложение: `http://localhost` (nginx → frontend + API)
+- Администратор создаётся при первом запуске из `ADMIN_LOGIN` / `ADMIN_PASSWORD`
+- Health-check сервисов: `/actuator/health` (используется в `HEALTHCHECK` образов)
+
+Масштабирование backend-сервисов: `AUTH_REPLICAS`, `COMPVAC_REPLICAS` в `.env`
+или `docker compose up -d --scale auth-service=3`.
+
+Логи всех сервисов — в stdout: `docker compose logs -f <service>`.
+
+### С Graylog и pgAdmin
 
 ```bash
-docker compose up --build -d
+docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d
 ```
 
-### 3) Проверка
+- Graylog: `http://localhost:9000`, pgAdmin: `http://localhost:5050`
 
-- API через nginx: `http://localhost/api/auth/...`, `http://localhost/api/comp-vac/...`
-- Notification-service: `http://localhost:8081`
-- pgAdmin: `http://localhost:5050` (admin@admin.com / admin)
-- Graylog: `http://localhost:9000`
+## Схема БД и миграции
+
+Схема управляется **Liquibase** (`<service>/demo/src/main/resources/db/changelog`).
+Миграции применяются автоматически при старте сервиса, Hibernate работает в режиме `validate`.
+Новая миграция — новый файл `NNN-описание.sql` в каталоге `changes/`.
 
 ## Локальный запуск без Docker
 
-### Backend
-Для каждого сервиса:
+Поднять только инфраструктуру и задать переменные окружения (см. `.env.example`):
 
 ```bash
-cd <service>/demo
-./mvnw spring-boot:run
+docker compose up -d auth-db company-vacancy-db redis kafka
+cd auth-service/demo && DB_PASSWORD=... JWT_SECRET=... ./mvnw spring-boot:run
 ```
 
-По умолчанию порты:
-- `auth-service` → `8080`
-- `company-vacancy-service` → `8083`
-- `notification-service` → `8081`
-
-### Frontend
+Frontend:
 
 ```bash
 cd frontend/my-app
 npm install
-npm run dev
+NEXT_PUBLIC_API_URL=http://localhost npm run dev   # http://localhost:3000
 ```
 
-Frontend доступен на `http://localhost:3000`.
+## Конфигурация
 
-## Переменные окружения и секреты
+Вся конфигурация передаётся через переменные окружения, полный список с описанием — в `.env.example`.
+Основные переменные сервисов:
 
-Для `auth-service` используются переменные Yandex Object Storage из `.env`:
-
-- `YC_ACCESS_KEY`
-- `YC_SECRET_KEY`
-- `YC_BUCKET_NAME`
-- `YC_REGION`
+| Переменная | Сервис | Назначение |
+|---|---|---|
+| `PORT` | все backend | HTTP-порт |
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | auth, company-vacancy | подключение к PostgreSQL |
+| `KAFKA_BOOTSTRAP_SERVERS` | все backend | адрес Kafka |
+| `REDIS_HOST`, `REDIS_PORT` | auth | адрес Redis |
+| `JWT_SECRET` | auth, company-vacancy | ключ подписи JWT |
+| `CORS_ALLOWED_ORIGINS` | auth, company-vacancy | разрешённые origin через запятую |
+| `ADMIN_LOGIN`, `ADMIN_PASSWORD` | auth | первичный администратор |
+| `YC_ACCESS_KEY`, `YC_SECRET_KEY`, `YC_BUCKET_NAME`, `YC_REGION` | auth | Yandex Object Storage |
+| `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` | notification | SMTP |
+| `FRONTEND_URL` | notification | адрес сайта для ссылок в письмах |
+| `NEXT_PUBLIC_API_URL` | frontend | адрес API (пусто — тот же origin) |
+| `SPRING_PROFILES_ACTIVE=graylog`, `GRAYLOG_HOST` | все backend | дополнительно слать логи в Graylog |
 
 ## Технологии
 
-- Java 17, Spring Boot 3.x, Spring Security, Spring Data JPA
-- PostgreSQL, Redis
-- Apache Kafka, Zookeeper
+- Java 17, Spring Boot 3.4, Spring Security, Spring Data JPA, Liquibase
+- PostgreSQL 16, Redis 7
+- Apache Kafka 3.8 (KRaft)
 - Nginx
 - Next.js 15, React 19, TypeScript
-- Graylog + Elasticsearch + MongoDB
+- Docker, Docker Compose
+- Опционально: Graylog + Elasticsearch + MongoDB
 
 ## Структура каталогов
 
@@ -165,8 +176,9 @@ Frontend доступен на `http://localhost:3000`.
 │   └── demo/                # Kafka consumers + email notifications
 ├── frontend/
 │   └── my-app/              # Next.js frontend
-├── nginx/
-├── postgres-init/
-├── docker-compose.yml
-└── build.bat
+├── nginx/                   # конфигурация reverse proxy
+├── docker-compose.yml                 # приложение + backing services
+├── docker-compose.observability.yml   # Graylog, pgAdmin (опционально)
+├── .env.example                       # шаблон конфигурации
+└── Отчёт.md
 ```

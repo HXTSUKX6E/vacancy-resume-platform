@@ -1,4 +1,5 @@
 'use client'
+import { API_URL } from '@/app/lib/api';
 import React, { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import axios from 'axios'
@@ -43,7 +44,7 @@ export default function CreateVacancyPage() {
             }
 
             await axios.post(
-                'http://localhost/api/comp-vac/vacancy',
+                `${API_URL}/api/comp-vac/vacancy`,
                 {
                     ...vacancy,
                     company_id: Number(companyId),

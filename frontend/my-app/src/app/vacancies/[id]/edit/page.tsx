@@ -1,4 +1,5 @@
 'use client'
+import { API_URL } from '@/app/lib/api';
 import React, { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import axios from 'axios'
@@ -17,7 +18,7 @@ export default function EditVacancyPage() {
         const fetchVacancy = async () => {
             try {
                 const token = localStorage.getItem('token')
-                const response = await axios.get(`http://localhost/api/comp-vac/vacancy/${id}`, {
+                const response = await axios.get(`${API_URL}/api/comp-vac/vacancy/${id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
                 setVacancy(response.data)
@@ -51,7 +52,7 @@ export default function EditVacancyPage() {
             }
 
             await axios.put(
-                `http://localhost/api/comp-vac/vacancy/${id}`,
+                `${API_URL}/api/comp-vac/vacancy/${id}`,
                 {
                     name: vacancy.name,
                     title: vacancy.title,

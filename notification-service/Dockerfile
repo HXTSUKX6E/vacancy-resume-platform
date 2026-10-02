@@ -1,14 +1,20 @@
-# Используем базовый образ OpenJDK
-FROM openjdk:17-jdk-slim
+# syntax=docker/dockerfile:1
+# Этап сборки (12 факторов, V): артефакт собирается из исходников внутри образа
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /build
+COPY demo/pom.xml demo/checkstyle.xml* ./
+RUN --mount=type=cache,target=/root/.m2 mvn -B -q dependency:go-offline
+COPY demo/src ./src
+RUN --mount=type=cache,target=/root/.m2 mvn -B -q -DskipTests package
 
-# Устанавливаем рабочую директорию
+# Этап запуска: только JRE и собранный jar
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-
-# Копируем JAR файл в контейнер
-COPY demo/target/notification-service.jar app.jar
-
-# Открываем порт
+RUN addgroup -S app && adduser -S app -G app
+COPY --from=build /build/target/notification-service.jar app.jar
+USER app
+ENV PORT=8081
 EXPOSE 8081
-
-# Указываем команду для запуска приложения
-ENTRYPOINT ["java", "-jar", "app.jar"]
+HEALTHCHECK --interval=10s --timeout=3s --start-period=60s --retries=5   CMD wget -qO- http://localhost:${PORT}/actuator/health/readiness || exit 1
+# exec-форма: JVM получает SIGTERM напрямую и корректно завершается (12 факторов, IX)
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar"]

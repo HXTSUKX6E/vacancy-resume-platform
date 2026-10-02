@@ -1,4 +1,5 @@
 'use client'
+import { API_URL } from '@/app/lib/api';
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
@@ -57,7 +58,7 @@ export default function HomePage() {
         const fetchData = async () => {
             try {
                 const token = localStorage.getItem('token')
-                const response = await axios.get('http://localhost/api/comp-vac/my-vacancy', {
+                const response = await axios.get(`${API_URL}/api/comp-vac/my-vacancy`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -90,7 +91,7 @@ export default function HomePage() {
             }
 
             const response = await axios.post(
-                `http://localhost/api/comp-vac/vacancy/${vacancyId}/response`,
+                `${API_URL}/api/comp-vac/vacancy/${vacancyId}/response`,
                 {},
                 {
                     headers: {
@@ -141,7 +142,7 @@ export default function HomePage() {
                 }
 
                 const response = await axios.delete(
-                    `http://localhost/api/comp-vac/vacancy/${vacancyId}`,
+                    `${API_URL}/api/comp-vac/vacancy/${vacancyId}`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -176,7 +177,7 @@ export default function HomePage() {
                 }
 
                 const response = await axios.delete(
-                    `http://localhost/api/comp-vac/my-company/${vacancyId}`,
+                    `${API_URL}/api/comp-vac/my-company/${vacancyId}`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,

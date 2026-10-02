@@ -1,4 +1,5 @@
 'use client'
+import { API_URL } from '@/app/lib/api';
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useRouter, useParams } from 'next/navigation'
@@ -64,7 +65,7 @@ export default function VacancyPage() {
                     return;
                 }
 
-                const response = await axios.get(`http://localhost/api/comp-vac/vacancy/${id}`, {
+                const response = await axios.get(`${API_URL}/api/comp-vac/vacancy/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     },
@@ -118,7 +119,7 @@ export default function VacancyPage() {
             }
 
             const response = await axios.post(
-                `http://localhost/api/comp-vac/vacancy/${vacancy?.vacancy_id}/response`,
+                `${API_URL}/api/comp-vac/vacancy/${vacancy?.vacancy_id}/response`,
                 {},
                 {
                     headers: {

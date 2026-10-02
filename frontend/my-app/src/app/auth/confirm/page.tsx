@@ -1,4 +1,5 @@
 'use client'
+import { API_URL } from '@/app/lib/api';
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -19,7 +20,7 @@ export default function ConfirmEmailPage() {
 
         const confirmEmail = async () => {
             try {
-                const response = await fetch(`http://localhost/api/auth/confirm?token=${token}`)
+                const response = await fetch(`${API_URL}/api/auth/confirm?token=${token}`)
 
                 if (response.ok) {
                     setStatus('success')
